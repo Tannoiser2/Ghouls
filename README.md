@@ -75,9 +75,8 @@ Dal menu, **Gioca online** (anche dalla versione web). Usa lo stesso progetto Fi
   turno vincono gli Umani. Nelle simulazioni gli Umani tendono a fare della Cattedrale una fortezza che i
   ghoul (al massimo 12 pedine mosse per turno) non riescono a prendere: senza limite la partita può non
   finire. Con l'alba al 30° turno IA contro IA vince il Ghoul circa una volta su due.
-- **Tessere fogna**: le scansioni mostrano un esemplare per tipo (11 tipi più il Covo). Il mazzo è di 31
-  tessere con 15 tombini (vedi `TILE_DECK` in `scripts/data/gh_data.gd`): se ricordi le quantità vere,
-  basta cambiarle lì. Finite le 10 pedine Locazione, i tombini in più restano chiusi.
+- **Tessere fogna**: 20 in tutto come nella scatola, 2 per tipo più il Covo e il Cimitero (uno ciascuno),
+  con 10 tombini, uno per pedina Locazione (`TILE_DECK` in `scripts/data/gh_data.gd`).
 - Se le tessere sono finite e nessun ghoul può più raggiungere un Obiettivo intatto, vincono gli Umani.
 - Il secondo «Atleti» della lista volontari è la pedina **Artisti** (– 2), come stampato sulla pedina.
 - Sul retro di Radio & TV compaiono anche i Medici: vale il fronte (Fotoreporter, Giornalisti).

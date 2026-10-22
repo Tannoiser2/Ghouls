@@ -81,11 +81,12 @@ const TILES := {
 	"cieco": {"img": 8, "open": 1, "tomb": 0, "name": "Vicolo cieco"},
 }
 ## Composizione del mazzo delle tessere fogna (il Covo si piazza al centro all'inizio).
-## Le scansioni mostrano un esemplare per tipo: le quantità sono una scelta di questa versione,
-## con abbastanza tombini (15) per le 10 pedine Locazione.
+## Dalla scatola: 20 tessere in tutto, 2 per tipo, più il Covo e il Cimitero (uno ciascuno).
+## Le due Diramazioni semplici sono state scansionate entrambe (t e t2, disegni diversi).
+## I tombini sono 10, quante le pedine Locazione.
 const TILE_DECK := {
-	"cimitero": 1, "t": 2, "t2": 2, "tt": 3, "dritto": 3, "dritto_t": 3, "curva": 3, "curva_t": 3,
-	"croce": 2, "croce_tt": 3, "cieco": 2,
+	"cimitero": 1, "t": 1, "t2": 1, "tt": 2, "dritto": 2, "dritto_t": 2, "curva": 2, "curva_t": 2,
+	"croce": 2, "croce_tt": 2, "cieco": 2,
 }
 
 const DIRS := [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]  # N E S W

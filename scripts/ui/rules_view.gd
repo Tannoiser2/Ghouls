@@ -156,7 +156,7 @@ func _volunteers() -> String:
 	s += _h("Pedine")
 	s += "• [b]Ghoul[/b]: 20 da 1, 15 da 2, 10 da 3, 5 da 4, 3 da 5, più 5 Sorprese.\n"
 	s += "• [b]Umani[/b]: 30 Volontari, 18 Folla, 31 Punti Vittoria (16 da 1, 10 da 2, 5 da 3), 11 Mine (5 da 1, 4 da 2, 2 da 3), 4 Radio, 9 Rinforzi ghoul.\n"
-	s += "• 10 pedine Locazione, una per Obiettivo; 31 tessere fogna più il Covo.\n"
+	s += "• 10 pedine Locazione, una per Obiettivo; 20 tessere fogna (2 per tipo, più il Covo e il Cimitero) con 10 tombini.\n"
 	return s
 
 
@@ -189,7 +189,6 @@ func _credits() -> String:
 	var s := _h("Scelte di questa versione")
 	s += "• [b]Alba[/b] (regola aggiunta, si sceglie nel menu): se la Cattedrale resiste fino al turno scelto i Ghouls si ritirano e vincono gli Umani, con il punteggio normale. Nel gioco originale non c'è un limite di turni.\n"
 	s += "• Se le tessere fogna sono finite e nessun ghoul può più raggiungere un Obiettivo intatto, vincono gli Umani.\n"
-	s += "• Il mazzo delle fogne ha 31 tessere (gli 11 tipi delle scansioni in più copie) con 15 tombini; finite le pedine Locazione, i tombini restano chiusi.\n"
 	s += "• Le pedine Folla valgono 0 in combattimento; le Sorprese sono pedine ghoul senza forza.\n"
 	s += "• I ghoul eliminati dalle mine danno il punto a chi ha portato la mina.\n"
 	s += "• Il ghoul tolto dal Covo all'inizio del turno si sceglie fra quelli di una locazione a piacere, a caso.\n"
