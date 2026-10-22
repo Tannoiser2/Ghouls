@@ -55,7 +55,7 @@ func _run() -> void:
 		return
 	var seats := [{"name": "Ghoul", "ai": not (mode in ["ghoul", "tutti"]), "level": 1}, {"name": "Rosso", "ai": not (mode in ["umano", "tutti"]), "level": 1},
 		{"name": "Verde", "ai": mode != "tutti", "level": 1}, {"name": "Giallo", "ai": mode != "tutti", "level": 1}]
-	main.start_game({"seats": seats, "ai_delay": 0.0, "max_turns": 30, "view3d": OS.get_environment("GH_3D") == "1", "style": "reborn" if OS.get_environment("GH_3D") == "1" else "classico", "seed": int(OS.get_environment("GH_SEED")) if OS.get_environment("GH_SEED") != "" else 7})
+	main.start_game({"seats": seats, "ai_delay": 0.0, "max_turns": 30, "view3d": OS.get_environment("GH_3D") == "1", "style": "reborn" if OS.get_environment("GH_RB") == "1" else "classico", "seed": int(OS.get_environment("GH_SEED")) if OS.get_environment("GH_SEED") != "" else 7})
 	await wait(10)
 	var view = main.current
 	var ai := GHAI.new(1, 3)

@@ -17,6 +17,7 @@ var dawn := 1
 var style := 0                  # 0 classica (scansioni del 1992), 1 Reborn
 var view3d := 1
 var msg: Label
+var cover: TextureRect
 var seats_box: VBoxContainer
 
 
@@ -43,7 +44,8 @@ func _ready() -> void:
 	_center.call_deferred()
 	get_viewport().size_changed.connect(_center)
 
-	var cover := UI.icon_rect(UI.tex("res://assets/misc/copertina.jpg"), Vector2(640, 870))
+	UI.reborn = style == 1
+	cover = UI.icon_rect(UI.tex("res://assets/misc/copertina.jpg"), Vector2(640, 870))
 	cover.position = Vector2(50, 70)
 	page.add_child(cover)
 	var tag := UI.label("Un'orda di Ghouls sale dalle fogne per conquistare la città e la Cattedrale.\nDifendetela, finché siete vivi.", 22, UI.BONE)
@@ -76,7 +78,11 @@ func _ready() -> void:
 	dr.tooltip_text = "Regola aggiunta in questa versione: se la Cattedrale resiste fino all'alba,\ni Ghouls si ritirano nelle fogne e vincono gli Umani."
 	rv.add_child(dr)
 	rv.add_child(_segmented("Velocità IA", ["Lenta", "Normale", "Veloce", "Istantanea"], speed, func(k): speed = k, 160))
-	var gr := _segmented("Grafica", ["Classica 1992", "Reborn"], style, func(k): style = k, 250)
+	var gr := _segmented("Grafica", ["Classica 1992", "Reborn"], style, func(k):
+		style = k
+		UI.reborn = k == 1
+		cover.texture = UI.tex("res://assets/misc/copertina.jpg")
+		_refresh_seats(), 250)
 	gr.tooltip_text = "Reborn: la nuova grafica (assets/reborn); dove manca un'immagine nuova si usa quella originale."
 	rv.add_child(gr)
 	rv.add_child(_segmented("Vista", ["2D", "3D: città e fogne"], view3d, func(k): view3d = k, 250))
