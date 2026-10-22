@@ -35,10 +35,11 @@ Grafica dalle scansioni della scatola originale.
 Nel menu: **Grafica** *Classica 1992* (le scansioni della scatola) o *Reborn*, e **Vista** *2D* o
 *3D: città e fogne* (si cambia anche in partita con il pulsante VISTA 2D/3D).
 
-- **Vista 3D**: le fogne sono un labirinto in rilievo al centro, la città sta sopra, tutt'intorno: i dieci
-  Obiettivi su piedistalli con il colore di chi li controlla, collegati ai loro tombini da tubi luminosi
-  (solo quelli che chi guarda conosce). Pedine come standee sulle basette; trascina col sinistro per
-  ruotare, col destro per spostare, rotella per lo zoom.
+- **Vista 3D**: le fogne sono un labirinto in rilievo. I luoghi della città aspettano in una colonna a destra;
+  appena chi guarda sa dove porta un tombino, il luogo sale in «superficie», sospeso sopra quella tessera e
+  collegato al tombino da un pozzo (il giocatore Ghoul li vede salire solo quando scopre i tombini).
+  Con la grafica Reborn i luoghi sono diorama 3D fatti con Meshy, normali o devastati. Pedine come standee
+  sulle basette; trascina col sinistro per ruotare, col destro per spostare, rotella per lo zoom.
 - **Reborn**: la nuova grafica va in `assets/reborn/` con i nomi elencati in
   [`assets/reborn/LEGGIMI.md`](assets/reborn/LEGGIMI.md) (tessere, Obiettivi, pedine, copertina, Trasporto
   e, facoltative, miniature `.glb` per ghoul, volontari ed edifici). Ogni immagine che manca viene presa

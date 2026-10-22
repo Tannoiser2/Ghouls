@@ -14,6 +14,9 @@ const S := 2.0                      # lato di una tessera
 const WALL_H := 0.26
 const CITY_Y := 0.45
 const MODEL_YAW := 0.0
+const SURF_Y := 2.6                 # altezza della «superficie» dove galleggiano i luoghi rivelati
+const COL_STEP := 2.3
+const MIN_GAP := 1.95
 
 var eng: GHEngine
 var view
@@ -83,10 +86,10 @@ func _ready() -> void:
 	fill.light_color = Color("#9fc0a0")
 	vp.add_child(fill)
 	var covo_light := OmniLight3D.new()
-	covo_light.position = Vector3(0, 1.4, 0)
+	covo_light.position = Vector3(0, 0.7, 0)
 	covo_light.light_color = Color("#ff5a3c")
 	covo_light.light_energy = 1.6
-	covo_light.omni_range = 4.5
+	covo_light.omni_range = 2.6
 	vp.add_child(covo_light)
 	pivot = Node3D.new()
 	vp.add_child(pivot)
@@ -109,6 +112,11 @@ func _ready() -> void:
 	vp.add_child(dyn)
 	_load_models()
 	_update_cam()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and _fitted:
+		fit.call_deferred()
 
 
 func set_engine(e: GHEngine) -> void:
@@ -292,19 +300,69 @@ func _build_tile(key: String) -> void:
 	root.add_child(edge)
 
 
-func _ring_radius() -> float:
-	var r := 5.0
+## Estensione delle fogne (in coordinate del mondo): Rect2 sul piano x/z.
+func _sewer_rect() -> Rect2:
+	var mn := Vector2(1e9, 1e9)
+	var mx := Vector2(-1e9, -1e9)
 	for key in eng.tiles:
 		var c := cell_center(GHEngine.cell("c:" + key))
-		r = maxf(r, Vector2(c.x, c.z).length() + S * 1.6)
-	return r
+		mn = mn.min(Vector2(c.x, c.z) - Vector2.ONE * S * 0.5)
+		mx = mx.max(Vector2(c.x, c.z) + Vector2.ONE * S * 0.5)
+	return Rect2(mn, mx - mn)
 
+
+## Dove sta ogni luogo: sospeso in superficie sopra il suo tombino se chi guarda sa dov'è,
+## altrimenti in una colonna a destra delle fogne.
+var surface := {}                  # obiettivo -> chiave tessera del tombino (solo per i luoghi rivelati)
+var tomb_of := {}                  # obiettivo -> posizione del tombino
 
 func _layout_buildings() -> void:
-	ring_r = _ring_radius()
-	for i in D.OBJ_ORDER.size():
-		var a := -PI * 0.5 + i * TAU / D.OBJ_ORDER.size()
-		bpos[D.OBJ_ORDER[i]] = Vector3(cos(a) * ring_r, CITY_Y, sin(a) * ring_r * 0.8)
+	surface = {}
+	tomb_of = {}
+	var r := _sewer_rect()
+	var n_surf := 0
+	for key in eng.tiles:
+		var t: Dictionary = eng.tiles[key]
+		for i in (t["tomb"] as Array).size():
+			var k: String = t["tomb"][i]
+			if k == "" or surface.has(k) or not view.sees_tomb(k):
+				continue
+			surface[k] = key
+			var tp := tomb_world(key, i)
+			tomb_of[k] = tp
+			n_surf += 1
+	# i luoghi in superficie partono sopra il loro tombino, un po' spinti verso l'esterno, e si
+	# allontanano fra loro finché non si toccano più (il pozzo resta collegato al tombino)
+	var ctr := r.get_center()
+	var pos := {}
+	for k in surface:
+		var tp: Vector3 = tomb_of[k]
+		var d := Vector2(tp.x, tp.z) - ctr
+		pos[k] = Vector2(tp.x, tp.z) + (d.normalized() * 0.5 if d.length() > 0.01 else Vector2.ZERO)
+	var ks := surface.keys()
+	ks.sort()
+	for it in 60:
+		for a in ks.size():
+			for b in range(a + 1, ks.size()):
+				var pa: Vector2 = pos[ks[a]]
+				var pb: Vector2 = pos[ks[b]]
+				var dd := pb - pa
+				var ln := dd.length()
+				if ln < MIN_GAP:
+					var push := (dd / maxf(ln, 0.001) if ln > 0.001 else Vector2(1, 0)) * (MIN_GAP - ln) * 0.5
+					pos[ks[a]] = pa - push
+					pos[ks[b]] = pb + push
+	for k in ks:
+		bpos[k] = Vector3(pos[k].x, SURF_Y, pos[k].y)
+	var idx := 0
+	for k in D.OBJ_ORDER:
+		if surface.has(k):
+			continue
+		var col := idx % 2
+		var row := idx / 2
+		bpos[k] = Vector3(r.end.x + 2.0 + col * COL_STEP, CITY_Y, r.position.y + 0.8 + row * COL_STEP)
+		idx += 1
+	ring_r = maxf(r.size.x, r.size.y)
 
 
 # ================================================================ ricostruzione
@@ -364,8 +422,6 @@ func _rebuild() -> void:
 				if view.sees_tomb(k):
 					txt = _short(k)
 					col = UI.BLOOD if eng.objs[k]["dev"] else Color("#3b78b4")
-					if not eng.objs[k]["dev"]:
-						_pipe(p3, k, col)
 				else:
 					txt = "?"
 					col = Color("#6b55a0")
@@ -389,6 +445,24 @@ func _rebuild() -> void:
 	# la città
 	for k in D.OBJ_ORDER:
 		_building(k)
+
+
+## Cilindro da a a b (il pozzo che sale dal tombino al luogo in superficie).
+func _beam(a: Vector3, b: Vector3, r: float, m: Material) -> void:
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = r
+	cm.bottom_radius = r * 1.25
+	cm.height = a.distance_to(b)
+	cm.radial_segments = 10
+	mi.mesh = cm
+	mi.material_override = m
+	dyn.add_child(mi)
+	mi.global_position = (a + b) * 0.5
+	var dir := (b - a).normalized()
+	var axis := Vector3.UP.cross(dir)
+	if axis.length() > 0.0001:
+		mi.global_basis = Basis(axis.normalized(), Vector3.UP.angle_to(dir))
 
 
 func _short(k: String) -> String:
@@ -512,14 +586,24 @@ func _building(k: String) -> void:
 	var dev: bool = o["dev"]
 	var ow: int = o["owner"]
 	var l := "o:" + k
-	# piedistallo
+	var floating := surface.has(k)
 	var pad := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius = 0.95
-	cm.bottom_radius = 1.05
-	cm.height = CITY_Y
-	pad.mesh = cm
-	pad.position = Vector3(p.x, CITY_Y * 0.5, p.z)
+	if floating:
+		# una lastra di strada in superficie, collegata al tombino da un pozzo
+		var bm := BoxMesh.new()
+		bm.size = Vector3(1.75, 0.12, 1.75)
+		pad.mesh = bm
+		pad.position = p - Vector3(0, 0.06, 0)
+		var tp: Vector3 = tomb_of[k]
+		var sc := UI.BLOOD if dev else Color("#3b78b4")
+		_beam(tp + Vector3(0, WALL_H, 0), p - Vector3(0, 0.12, 0), 0.12, _mat("shaft_" + sc.to_html(), sc.darkened(0.35), 0.5, 0.3, Color(sc, 0.5)))
+	else:
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.95
+		cm.bottom_radius = 1.05
+		cm.height = CITY_Y
+		pad.mesh = cm
+		pad.position = Vector3(p.x, CITY_Y * 0.5, p.z)
 	pad.material_override = _mat("pad_dev" if dev else "pad", Color("#2a1512") if dev else Color("#2b2f26"), 0.85)
 	dyn.add_child(pad)
 	if ow >= 1:
@@ -532,7 +616,8 @@ func _building(k: String) -> void:
 	if focus == l:
 		_halo(p + Vector3(0, 0.12, 0), 1.25, UI.BLOOD_L)
 	# l'edificio: modello 3D (Reborn) oppure la tessera Obiettivo in piedi
-	var mdl := _model(k + "_dev", 0.0, 2.0) if dev and models.has(k + "_dev") else _model(k, 0.0, 2.0)
+	var wdt := 1.55 if floating else 1.9
+	var mdl := _model(k + "_dev", 0.0, wdt) if dev and models.has(k + "_dev") else _model(k, 0.0, wdt)
 	if mdl != null:
 		mdl.position = p
 		mdl.rotation.y = MODEL_YAW          # il fronte del diorama guarda verso la telecamera iniziale
@@ -598,14 +683,56 @@ func _update_cam() -> void:
 	cam.rotation = Vector3.ZERO
 
 
+var _fit_rect := Rect2()
+var _fit_sig := ""
+
 func fit() -> void:
 	if eng == null:
 		return
 	_layout_buildings()
-	target = Vector3(0, 0, ring_r * 0.18)
-	dist = ring_r * 2.25 + 4.0
+	var r := _sewer_rect()
+	var pts: Array = []
+	for key in eng.tiles:
+		var c := cell_center(GHEngine.cell("c:" + key))
+		for dx in [-1, 1]:
+			for dz in [-1, 1]:
+				pts.append(c + Vector3(dx * S * 0.5, 0, dz * S * 0.5))
+	for k in bpos:
+		var bp: Vector3 = bpos[k]
+		for dx in [-1, 1]:
+			for dz in [-1, 1]:
+				pts.append(bp + Vector3(dx * 0.95, 0, dz * 0.95))
+		pts.append(bp + Vector3(0, 1.9, 0))
+	for k in bpos:
+		r = r.expand(Vector2(bpos[k].x, bpos[k].z) + Vector2(1.2, 1.2))
+		r = r.expand(Vector2(bpos[k].x, bpos[k].z) - Vector2(1.2, 1.2))
+	_fit_rect = r
+	var c0 := r.get_center()
+	target = Vector3(c0.x, 1.0, c0.y)
 	yaw = 0.0
-	pitch = -56.0
+	pitch = -55.0
+	dist = 20.0
+	# area utile dello schermo: sotto c'è la barra delle decisioni
+	var area := Rect2(Vector2(0.05, 0.05), Vector2(0.90, 0.72))
+	if size.x > 10 and Vector2(vp.size) != size:
+		vp.size = Vector2i(size)
+	for it in 8:
+		_update_cam()
+		var mn := Vector2(1e9, 1e9)
+		var mx := Vector2(-1e9, -1e9)
+		var vs := Vector2(vp.size)
+		for p3 in pts:
+			var sp := cam.unproject_position(p3) / vs
+			mn = mn.min(sp)
+			mx = mx.max(sp)
+		var box := Rect2(mn, mx - mn)
+		var k := maxf(box.size.x / area.size.x, box.size.y / area.size.y)
+		# sposta il centro inquadrato verso il centro dell'area utile, poi regola la distanza
+		var off := box.get_center() - area.get_center()
+		var right := cam.global_transform.basis.x
+		var fwd := Vector3(-sin(deg_to_rad(yaw)), 0, -cos(deg_to_rad(yaw)))
+		target += right * off.x * dist * 0.75 - fwd * off.y * dist * 0.95
+		dist = clampf(dist * lerpf(1.0, k, 0.85), 4.0, 80.0)
 	_fitted = true
 	_update_cam()
 
@@ -613,8 +740,10 @@ func fit() -> void:
 func ensure_visible() -> void:
 	if eng == null:
 		return
-	var r := _ring_radius()
-	if not _fitted or r > ring_r + 0.01:
+	_layout_buildings()
+	var sig := str(surface.keys()) + str(_sewer_rect())
+	if not _fitted or sig != _fit_sig:
+		_fit_sig = sig
 		fit()
 
 
@@ -682,11 +811,11 @@ func _pick(pos: Vector2) -> Dictionary:
 	var best := ""
 	var bd := 1e9
 	for k in bpos:
-		var c: Vector3 = bpos[k] + Vector3(0, 0.8, -0.35)
+		var c: Vector3 = bpos[k] + Vector3(0, 0.45, 0)
 		if cam.is_position_behind(c):
 			continue
 		var sp := _screen(c)
-		var rad := (_screen(c + cam.global_transform.basis.x * 0.9) - sp).length()
+		var rad := (_screen(c + cam.global_transform.basis.x * 0.8) - sp).length()
 		var dd := sp.distance_to(pos)
 		if dd < rad and dd < bd:
 			bd = dd

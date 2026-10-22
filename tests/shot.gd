@@ -80,7 +80,7 @@ func _run() -> void:
 				else:
 					bad.append([loc, r])
 			for k in b.bpos:
-				var r2 := b._pick(b._screen(b.bpos[k] + Vector3(0, 0.8, -0.35)))
+				var r2 := b._pick(b._screen(b.bpos[k] + Vector3(0, 0.45, 0)))
 				if r2.get("obj", "") == k:
 					ok += 1
 				else:

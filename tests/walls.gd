@@ -39,10 +39,12 @@ func _run() -> void:
 	b.target = Vector3(1.5, 0, 0.8)
 	if args.size() > 3:
 		b.target = b.bpos[args[3]]
-	b.yaw = float(args[0]) if args.size() > 0 else 25.0
+	b.yaw = float(args[0]) if args.size() > 0 and args[0] != "fit" else 25.0
 	b.pitch = float(args[1]) if args.size() > 1 else -38.0
 	b.dist = float(args[2]) if args.size() > 2 else 6.5
 	b._update_cam()
+	if args.size() > 0 and args[0] == "fit":
+		b.fit()
 	for i in 8:
 		await process_frame
 	var img := b.vp.get_texture().get_image()
