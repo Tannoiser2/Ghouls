@@ -44,6 +44,10 @@ Nel menu: **Grafica** *Classica 1992* (le scansioni della scatola) o *Reborn*, e
   e, facoltative, miniature `.glb` per ghoul, volontari ed edifici). Ogni immagine che manca viene presa
   dalla grafica classica, quindi si può aggiungere un pezzo alla volta. Regole, IA e gioco online sono gli
   stessi.
+- **Pareti delle fogne (Reborn, 3D)**: per ogni tessera `tools/pareti_blender.py` ricava dal disegno il contorno
+  dei corridoi e in Blender alza un muro smussato che lo segue (`assets/reborn/models/tiles/*.glb`). I mattoni
+  sono proiettati in coordinate del mondo (`pareti.gdshader`), quindi i corsi proseguono da una tessera
+  all'altra senza giunte. Se cambi il disegno di una tessera, rilancia lo script per rifarne le pareti.
 
 ## Comandi
 - Fogne: rotella per lo zoom, trascina per spostare, **Centra** per rifare l'inquadratura.

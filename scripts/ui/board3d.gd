@@ -143,6 +143,16 @@ func _mat(key: String, col: Color, rough := 0.8, metal := 0.0, emit := Color(0, 
 	return m
 
 
+func _wall_mat() -> Material:
+	if not mats.has("pareti"):
+		var m := ShaderMaterial.new()
+		m.shader = load("res://assets/reborn/models/materials/pareti.gdshader")
+		m.set_shader_parameter("mattoni", load("res://assets/reborn/models/materials/mattoni.jpg"))
+		m.set_shader_parameter("roccia", load("res://assets/reborn/models/materials/roccia.jpg"))
+		mats["pareti"] = m
+	return mats["pareti"]
+
+
 func _glow_mat(col: Color, alpha := 0.45) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -226,6 +236,16 @@ func _build_tile(key: String) -> void:
 	floor_.rotation.y = -int(t["r"]) * PI * 0.5
 	floor_.material_override = _tex_mat(UI.tile_tex(t["k"]))
 	root.add_child(floor_)
+	# Reborn: pareti di mattoni modellate in Blender sul contorno del disegno della tessera
+	var wp := "res://assets/reborn/models/tiles/%s.glb" % t["k"]
+	if UI.reborn and ResourceLoader.exists(wp):
+		var walls: Node3D = load(wp).instantiate()
+		walls.rotation.y = -int(t["r"]) * PI * 0.5
+		root.add_child(walls)
+		for mi in walls.find_children("*", "MeshInstance3D", true, false):
+			(mi as MeshInstance3D).material_override = _wall_mat()
+			(mi as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		return
 	# gallerie in rilievo: blocchi di roccia dove non ci sono corridoi
 	var room: bool = t["k"] == "covo" or t["k"] == "cimitero"
 	var m := D.open_mask(t["k"], int(t["r"]))
