@@ -46,10 +46,27 @@ static func _var(f: Font, weight: int) -> FontVariation:
 	return fv
 
 
+## Grafica «Reborn»: se è attiva e in assets/reborn/ c'è un file con lo stesso nome (png, jpg o webp)
+## nella stessa sottocartella, si usa quello al posto della scansione originale.
+static var reborn := false
+
+
 static func tex(path: String) -> Texture2D:
-	if not _tex.has(path):
-		_tex[path] = load(path)
-	return _tex[path]
+	var key := ("R|" if reborn else "") + path
+	if not _tex.has(key):
+		var t: Texture2D = null
+		if reborn and path.begins_with("res://assets/") and not path.begins_with("res://assets/reborn/"):
+			t = _reborn_file(path.substr(13).get_basename())
+		_tex[key] = t if t != null else load(path)
+	return _tex[key]
+
+
+static func _reborn_file(rel: String) -> Texture2D:
+	for ext in ["png", "jpg", "webp"]:
+		var p := "res://assets/reborn/%s.%s" % [rel, ext]
+		if ResourceLoader.exists(p):
+			return load(p)
+	return null
 
 
 static func pcol(color: String) -> Color:
@@ -93,6 +110,12 @@ static func human_back() -> Texture2D:
 
 
 static func tile_tex(kind: String) -> Texture2D:
+	if reborn:
+		var key := "RT|" + kind
+		if not _tex.has(key):
+			_tex[key] = _reborn_file("tiles/" + kind)
+		if _tex[key] != null:
+			return _tex[key]
 	return tex("res://assets/tiles/t%02d.jpg" % D.TILES[kind]["img"])
 
 

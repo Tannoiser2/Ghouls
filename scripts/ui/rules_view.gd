@@ -178,6 +178,7 @@ func _digital() -> String:
 	s += "• Movimenti: clicca la pila di partenza, scegli le pedine nella barra in basso, poi clicca la destinazione. Per salire in un Obiettivo clicca il tondino del tombino sulla tessera.\n"
 	s += "• Combattimento: clicca uno o più attaccanti e poi il bersaglio; «Suggerisci» propone un'assegnazione.\n"
 	s += "• Con più persone allo stesso schermo, quando si passa dal Ghoul agli Umani (o per i segnalini segreti) compare la schermata «Tocca a…».\n"
+	s += "• Vista 3D (pulsante VISTA 3D): trascina col sinistro per ruotare, col destro per spostare, rotella per lo zoom; clic sugli edifici della città per scegliere un Obiettivo, sui tondini dei tombini per salirci.\n"
 	s += "• F11: schermo intero.\n\n"
 	s += _h("Gioco online")
 	s += "Dal menu, «Gioca online»: chi crea la stanza dà il codice di 4 lettere agli amici; i posti liberi li gioca l'IA. Se cade la linea si rientra con lo stesso codice.\n"

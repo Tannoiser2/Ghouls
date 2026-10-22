@@ -30,6 +30,10 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
+func redraw() -> void:
+	queue_redraw()
+
+
 func set_engine(e: GHEngine) -> void:
 	eng = e
 	queue_redraw()

@@ -31,6 +31,20 @@ Grafica dalle scansioni della scatola originale.
   gioca lealmente, senza sbirciare le informazioni nascoste.
 - **Regole complete** dal menu e in partita (REGOLE), **diario** della partita (DIARIO).
 
+## Grafica Reborn e vista 3D
+Nel menu: **Grafica** *Classica 1992* (le scansioni della scatola) o *Reborn*, e **Vista** *2D* o
+*3D: città e fogne* (si cambia anche in partita con il pulsante VISTA 2D/3D).
+
+- **Vista 3D**: le fogne sono un labirinto in rilievo al centro, la città sta sopra, tutt'intorno: i dieci
+  Obiettivi su piedistalli con il colore di chi li controlla, collegati ai loro tombini da tubi luminosi
+  (solo quelli che chi guarda conosce). Pedine come standee sulle basette; trascina col sinistro per
+  ruotare, col destro per spostare, rotella per lo zoom.
+- **Reborn**: la nuova grafica va in `assets/reborn/` con i nomi elencati in
+  [`assets/reborn/LEGGIMI.md`](assets/reborn/LEGGIMI.md) (tessere, Obiettivi, pedine, copertina, Trasporto
+  e, facoltative, miniature `.glb` per ghoul, volontari ed edifici). Ogni immagine che manca viene presa
+  dalla grafica classica, quindi si può aggiungere un pezzo alla volta. Regole, IA e gioco online sono gli
+  stessi.
+
 ## Comandi
 - Fogne: rotella per lo zoom, trascina per spostare, **Centra** per rifare l'inquadratura.
 - Le locazioni in arancio sono quelle che si possono scegliere. Per muovere: clic sulla pila di partenza,
@@ -78,7 +92,7 @@ scripts/data/gh_data.gd      volontari, obiettivi, pedine, tessere fogna
 scripts/core/engine.gd       motore delle regole (nessuna dipendenza dalla UI)
 scripts/core/ai.gd           IA del Ghoul e degli Umani
 scripts/net/                 Firebase (REST) e partita online in lockstep
-scripts/ui/                  menu, mappa delle fogne, vista di gioco, regole
+scripts/ui/                  menu, mappa delle fogne 2D, vista 3D (board3d.gd), vista di gioco, regole
 tests/sim.gd                 godot --headless --path . -s tests/sim.gd -- 30 2   (partite IA contro IA)
 tests/shot.gd                xvfb-run godot --path . -s res://tests/shot.gd -- umano 10   (screenshot)
 tests/online_play.gd         due dispositivi online sul finto Firebase (tests/firebase_mock.py)

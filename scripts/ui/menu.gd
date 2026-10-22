@@ -14,6 +14,8 @@ var modes := {}                 # posto -> 0..3
 var names := {}
 var speed := 1
 var dawn := 1
+var style := 0                  # 0 classica (scansioni del 1992), 1 Reborn
+var view3d := 1
 var msg: Label
 var seats_box: VBoxContainer
 
@@ -27,6 +29,8 @@ func _ready() -> void:
 		names = st["names"].duplicate()
 		speed = st["speed"]
 		dawn = st["dawn"]
+		style = st.get("style", 0)
+		view3d = st.get("view3d", 1)
 	for k in SEAT_KEYS:
 		if not modes.has(k):
 			modes[k] = 0 if k == "rosso" else 2
@@ -53,7 +57,7 @@ func _ready() -> void:
 	var right := PanelContainer.new()
 	right.add_theme_stylebox_override("panel", UI.dark_style(10, 0.9))
 	right.position = Vector2(740, 70)
-	right.custom_minimum_size = Vector2(1130, 740)
+	right.custom_minimum_size = Vector2(1130, 750)
 	page.add_child(right)
 	var rv := VBoxContainer.new()
 	rv.add_theme_constant_override("separation", 12)
@@ -72,13 +76,17 @@ func _ready() -> void:
 	dr.tooltip_text = "Regola aggiunta in questa versione: se la Cattedrale resiste fino all'alba,\ni Ghouls si ritirano nelle fogne e vincono gli Umani."
 	rv.add_child(dr)
 	rv.add_child(_segmented("Velocità IA", ["Lenta", "Normale", "Veloce", "Istantanea"], speed, func(k): speed = k, 160))
+	var gr := _segmented("Grafica", ["Classica 1992", "Reborn"], style, func(k): style = k, 250)
+	gr.tooltip_text = "Reborn: la nuova grafica (assets/reborn); dove manca un'immagine nuova si usa quella originale."
+	rv.add_child(gr)
+	rv.add_child(_segmented("Vista", ["2D", "3D: città e fogne"], view3d, func(k): view3d = k, 250))
 
 	msg = UI.label("", 24, UI.BLOOD_L, UI.font_bold)
 	msg.position = Vector2(740, 1000)
 	page.add_child(msg)
 	var btns := HBoxContainer.new()
 	btns.add_theme_constant_override("separation", 18)
-	btns.position = Vector2(740, 840)
+	btns.position = Vector2(740, 862)
 	page.add_child(btns)
 	var b_start := _big_button("Si scende nelle fogne", 520, true)
 	b_start.pressed.connect(_on_start)
@@ -139,7 +147,7 @@ func _center() -> void:
 
 
 func _store() -> void:
-	main.menu_state = {"nh": nh, "modes": modes.duplicate(), "names": names.duplicate(), "speed": speed, "dawn": dawn}
+	main.menu_state = {"nh": nh, "modes": modes.duplicate(), "names": names.duplicate(), "speed": speed, "dawn": dawn, "style": style, "view3d": view3d}
 
 
 func _seat_keys() -> Array:
@@ -240,7 +248,7 @@ func _config() -> Dictionary:
 			nm = "Ghoul" if k == "ghoul" else D.COLOR_NAME[k]
 		seats.append({"name": nm, "ai": m != 0, "level": maxi(0, m - 1)})
 	var speeds := [1.1, 0.55, 0.15, 0.0]
-	return {"seats": seats, "ai_delay": speeds[speed], "max_turns": DAWN[dawn]}
+	return {"seats": seats, "ai_delay": speeds[speed], "max_turns": DAWN[dawn], "style": "reborn" if style == 1 else "classico", "view3d": view3d == 1}
 
 
 func _on_start() -> void:

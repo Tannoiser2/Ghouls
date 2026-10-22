@@ -16,7 +16,10 @@ var omniscient := false
 var local_seats: Array = []
 var _dirty := false
 
-var map: MapView
+var map                          # vista attiva: MapView (2D) o Board3D (3D)
+var map2d: MapView
+var map3d: Board3D
+var view_btn: Button
 var top_lbl: Label
 var phase_lbl: Label
 var status_lbl: Label
@@ -47,6 +50,7 @@ var last_ticker: Array = []
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	UI.reborn = str(config.get("style", "classico")) == "reborn"
 	engine = GHEngine.new()
 	add_child(engine)
 	online = config.get("online", null)
@@ -74,7 +78,8 @@ func _ready() -> void:
 	engine.decision_requested.connect(_on_decision)
 	engine.game_ended.connect(_on_end)
 	engine.fx.connect(_on_fx)
-	map.set_engine(engine)
+	map2d.set_engine(engine)
+	map3d.set_engine(engine)
 	_refresh()
 	map.fit.call_deferred()
 	if online != null and online.role != "host":
@@ -115,13 +120,23 @@ func _build() -> void:
 	bg.color = UI.BG
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
-	map = MapView.new()
-	map.view = self
-	map.position = Vector2(0, 64)
-	map.size = Vector2(1180, 1016)
-	add_child(map)
-	map.loc_clicked.connect(_on_loc_click)
-	map.tomb_clicked.connect(_on_tomb_click)
+	map2d = MapView.new()
+	map2d.view = self
+	map2d.position = Vector2(0, 64)
+	map2d.size = Vector2(1180, 1016)
+	add_child(map2d)
+	map3d = Board3D.new()
+	map3d.view = self
+	map3d.position = Vector2(0, 64)
+	map3d.size = Vector2(1180, 1016)
+	add_child(map3d)
+	for m in [map2d, map3d]:
+		m.loc_clicked.connect(_on_loc_click)
+		m.tomb_clicked.connect(_on_tomb_click)
+	var v3: bool = config.get("view3d", false)
+	map = map3d if v3 else map2d
+	map2d.visible = not v3
+	map3d.visible = v3
 	# barra in alto
 	var top := PanelContainer.new()
 	top.add_theme_stylebox_override("panel", UI.panel_style(Color(0.05, 0.06, 0.04, 0.97), Color(UI.SLIME_D, 0.6), 0, 0))
@@ -149,6 +164,9 @@ func _build() -> void:
 		side_btn = UI.button("Vista: tutto", 150, 42, 17)
 		side_btn.pressed.connect(_cycle_side)
 		th.add_child(side_btn)
+	view_btn = UI.button("Vista 2D" if map == map3d else "Vista 3D", 120, 42, 17)
+	view_btn.pressed.connect(_toggle_3d)
+	th.add_child(view_btn)
 	for spec in [["Centra", func(): map.fit()], ["Diario", _toggle_log], ["Regole", _show_rules_popup], ["Menu", _confirm_menu]]:
 		var b := UI.button(spec[0], 104, 42, 17)
 		b.pressed.connect(spec[1])
@@ -225,6 +243,17 @@ func _build() -> void:
 	log_panel.add_child(log_text)
 
 
+func _toggle_3d() -> void:
+	var to3: bool = map == map2d
+	map = map3d if to3 else map2d
+	map2d.visible = not to3
+	map3d.visible = to3
+	view_btn.text = "Vista 2D" if to3 else "Vista 3D"
+	map.focus = map2d.focus if to3 else map3d.focus
+	_refresh()
+	map.fit()
+
+
 func _place_dec() -> void:
 	dec_panel.position = Vector2(10, 1072 - dec_panel.size.y)
 
@@ -281,7 +310,7 @@ func _refresh() -> void:
 		trans_rows[s].tooltip_text = trans_tooltip(s)
 	_update_highlights()
 	map.ensure_visible()
-	map.queue_redraw()
+	map.redraw()
 	_refresh_combat()
 
 
@@ -828,6 +857,8 @@ func _refresh_combat() -> void:
 	var att: bool = not pending.is_empty() and pending["type"] == "attacks"
 	if c.is_empty() and not att:
 		combat_panel.visible = false
+		map2d.focus = ""
+		map3d.focus = ""
 		return
 	combat_panel.visible = true
 	for ch in combat_box.get_children():
@@ -837,7 +868,8 @@ func _refresh_combat() -> void:
 	if loc == "":
 		combat_panel.visible = false
 		return
-	map.focus = loc
+	map2d.focus = loc
+	map3d.focus = loc
 	var step: String = c.get("step", "")
 	var step_t: String = {"ranged": "Tiro da lontano", "hmelee": "Corpo a corpo: attaccano gli Umani", "gmelee": "Corpo a corpo: attaccano i Ghoul"}.get(step, "")
 	var head := HBoxContainer.new()
@@ -995,7 +1027,8 @@ func _on_fx(kind: String, data: Dictionary) -> void:
 		"tile":
 			map.ensure_visible()
 		"combat":
-			map.focus = data["loc"]
+			map2d.focus = data["loc"]
+			map3d.focus = data["loc"]
 		"devastated":
 			status_lbl.text = "%s è stato devastato!" % D.obj_name(data["obj"])
 
