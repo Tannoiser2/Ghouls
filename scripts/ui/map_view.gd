@@ -59,15 +59,9 @@ func fit() -> void:
 
 
 func ensure_visible() -> void:
+	# l'inquadratura si fa solo la prima volta (e con il pulsante Centra): poi resta dove la mette il giocatore
 	if not _fitted:
 		fit()
-		return
-	# se una tessera esce dallo schermo si rifà l'inquadratura
-	for key in eng.tiles:
-		var r := _cell_rect(GHEngine.cell("c:" + key))
-		if not Rect2(Vector2.ZERO, Vector2(size.x, size.y * 0.8)).grow(-10).encloses(r.grow(-T * zoom * 0.3)):
-			fit()
-			return
 
 
 func _cell_rect(p: Vector2i) -> Rect2:

@@ -251,7 +251,7 @@ func _toggle_3d() -> void:
 	view_btn.text = "Vista 2D" if to3 else "Vista 3D"
 	map.focus = map2d.focus if to3 else map3d.focus
 	_refresh()
-	map.fit()
+	map.ensure_visible()
 
 
 func _place_dec() -> void:

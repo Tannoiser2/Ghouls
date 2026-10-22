@@ -115,7 +115,7 @@ func _ready() -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_RESIZED and _fitted:
+	if what == NOTIFICATION_RESIZED and _fitted and not user_moved:
 		fit.call_deferred()
 
 
@@ -563,7 +563,8 @@ func _standee(id: int, at: Vector3, face: bool, h := 0.8) -> void:
 	var sp := Sprite3D.new()
 	sp.texture = UI.counter_tex(c) if face else UI.ghoul_back()
 	sp.pixel_size = h / float(sp.texture.get_height())
-	sp.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	sp.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	sp.double_sided = true
 	sp.shaded = false
 	sp.position = at + Vector3(0, 0.06 + h * 0.5, 0)
 	dyn.add_child(sp)
@@ -626,7 +627,7 @@ func _building(k: String) -> void:
 		var sp := Sprite3D.new()
 		sp.texture = UI.obj_tex(k, dev)
 		sp.pixel_size = 2.1 / float(sp.texture.get_width())
-		sp.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+		sp.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		sp.shaded = false
 		sp.position = p + Vector3(0, 0.75 + (0.2 if k == "cattedrale" else 0.0), -0.35)
 		if k == "cattedrale":
@@ -657,7 +658,7 @@ func _building(k: String) -> void:
 			var sp2 := Sprite3D.new()
 			sp2.texture = UI.human_back()
 			sp2.pixel_size = 0.45 / float(sp2.texture.get_height())
-			sp2.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+			sp2.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 			sp2.shaded = false
 			sp2.position = p + Vector3(0, 0.3, 0.75)
 			dyn.add_child(sp2)
@@ -685,6 +686,7 @@ func _update_cam() -> void:
 
 var _fit_rect := Rect2()
 var _fit_sig := ""
+var user_moved := false
 
 func fit() -> void:
 	if eng == null:
@@ -740,10 +742,8 @@ func fit() -> void:
 func ensure_visible() -> void:
 	if eng == null:
 		return
-	_layout_buildings()
-	var sig := str(surface.keys()) + str(_sewer_rect())
-	if not _fitted or sig != _fit_sig:
-		_fit_sig = sig
+	# l'inquadratura si fa solo la prima volta (e con il pulsante Centra): poi resta dove la mette il giocatore
+	if not _fitted:
 		fit()
 
 
@@ -752,6 +752,7 @@ func _gui_input(ev: InputEvent) -> void:
 		var mb := ev as InputEventMouseButton
 		if mb.pressed and (mb.button_index == MOUSE_BUTTON_WHEEL_UP or mb.button_index == MOUSE_BUTTON_WHEEL_DOWN):
 			dist = clampf(dist * (0.9 if mb.button_index == MOUSE_BUTTON_WHEEL_UP else 1.11), 4.0, 80.0)
+			user_moved = true
 			_update_cam()
 			accept_event()
 			return
@@ -770,6 +771,7 @@ func _gui_input(ev: InputEvent) -> void:
 			if mm.position.distance_to(drag_from) > 6.0:
 				drag_moved = true
 			if drag_moved:
+				user_moved = true
 				if drag_btn == MOUSE_BUTTON_LEFT:
 					yaw -= mm.relative.x * 0.25
 					pitch = clampf(pitch - mm.relative.y * 0.2, -89.0, -15.0)
