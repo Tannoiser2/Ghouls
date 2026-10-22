@@ -1,0 +1,9 @@
+{
+  "titolo": "Ghouls",
+  "sottotitolo": "l'orda sale dalle fogne",
+  "descrizione": "Il gioco originale di Marco Ramadori e Stefano Ancillai (Devil's Den, 1992): un giocatore guida le orde dei Ghouls dalle fogne alla conquista della città e della Cattedrale, gli altri organizzano la disperata difesa con volontari, folla, mine e rifornimenti. IA e partite online.",
+  "online": true,
+  "sezione": "originale",
+  "ordine": 191,
+  "generi": ["Horror", "Avventura"]
+}
