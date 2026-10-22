@@ -13,6 +13,7 @@ const D = preload("res://scripts/data/gh_data.gd")
 const S := 2.0                      # lato di una tessera
 const WALL_H := 0.26
 const CITY_Y := 0.45
+const MODEL_YAW := 0.0
 
 var eng: GHEngine
 var view
@@ -177,18 +178,25 @@ func _tex_mat(t: Texture2D, alpha := 1.0, unshaded := false) -> StandardMaterial
 
 
 func _load_models() -> void:
-	for n in ["ghoul", "ghoul_1", "ghoul_2", "ghoul_3", "ghoul_4", "ghoul_5", "volontario"] + D.OBJ_ORDER:
+	var names := ["ghoul", "ghoul_1", "ghoul_2", "ghoul_3", "ghoul_4", "ghoul_5", "volontario"]
+	for k in D.OBJ_ORDER:
+		names.append(k)
+		names.append(k + "_dev")
+	for n in names:
 		var p := "res://assets/reborn/models/%s.glb" % n
 		if UI.reborn and ResourceLoader.exists(p):
 			models[n] = load(p)
 
 
-func _model(n: String, height: float) -> Node3D:
+## Istanza di un modello Reborn alta `height`; con `width` > 0 la pianta sta invece in un quadrato di quel lato.
+func _model(n: String, height: float, width := 0.0) -> Node3D:
 	if not models.has(n):
 		return null
 	var inst: Node3D = models[n].instantiate()
 	var aabb := _aabb(inst)
 	var sc := height / maxf(aabb.size.y, 0.001)
+	if width > 0.0:
+		sc = width / maxf(maxf(aabb.size.x, aabb.size.z), 0.001)
 	var holder := Node3D.new()
 	holder.add_child(inst)
 	inst.scale = Vector3.ONE * sc
@@ -524,9 +532,10 @@ func _building(k: String) -> void:
 	if focus == l:
 		_halo(p + Vector3(0, 0.12, 0), 1.25, UI.BLOOD_L)
 	# l'edificio: modello 3D (Reborn) oppure la tessera Obiettivo in piedi
-	var mdl := _model(k, 1.6)
+	var mdl := _model(k + "_dev", 0.0, 2.0) if dev and models.has(k + "_dev") else _model(k, 0.0, 2.0)
 	if mdl != null:
 		mdl.position = p
+		mdl.rotation.y = MODEL_YAW          # il fronte del diorama guarda verso la telecamera iniziale
 		dyn.add_child(mdl)
 	else:
 		var sp := Sprite3D.new()

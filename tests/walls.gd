@@ -23,6 +23,8 @@ func _run() -> void:
 		"2,0": {"k": "curva_t", "r": 1, "tomb": ["ospedale"]}, "1,1": {"k": "dritto", "r": 0, "tomb": []},
 		"1,-1": {"k": "tt", "r": 2, "tomb": ["porto"]}, "0,1": {"k": "curva", "r": 3, "tomb": []},
 		"-1,0": {"k": "croce_tt", "r": 0, "tomb": ["cattedrale", "polizia"]}, "1,2": {"k": "cieco", "r": 2, "tomb": []}}
+	if OS.get_environment("GH_DEV") == "1":
+		e.objs["ospedale"]["dev"] = true
 	var b := Board3D.new()
 	b.view = FakeView.new()
 	b.size = Vector2(1920, 1080)
@@ -32,6 +34,8 @@ func _run() -> void:
 	for i in 6:
 		await process_frame
 	b.target = Vector3(1.5, 0, 0.8)
+	if args.size() > 3:
+		b.target = b.bpos[args[3]]
 	b.yaw = float(args[0]) if args.size() > 0 else 25.0
 	b.pitch = float(args[1]) if args.size() > 1 else -38.0
 	b.dist = float(args[2]) if args.size() > 2 else 6.5
