@@ -25,6 +25,9 @@ func _run() -> void:
 		"-1,0": {"k": "croce_tt", "r": 0, "tomb": ["cattedrale", "polizia"]}, "1,2": {"k": "cieco", "r": 2, "tomb": []}}
 	if OS.get_environment("GH_DEV") == "1":
 		e.objs["ospedale"]["dev"] = true
+	if OS.get_environment("GH_DEV") == "2":
+		for k in e.objs:
+			e.objs[k]["dev"] = true
 	var b := Board3D.new()
 	b.view = FakeView.new()
 	b.size = Vector2(1920, 1080)

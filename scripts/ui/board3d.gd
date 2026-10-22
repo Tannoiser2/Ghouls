@@ -547,12 +547,15 @@ func _building(k: String) -> void:
 		if k == "cattedrale":
 			sp.pixel_size *= 1.25
 		dyn.add_child(sp)
-	_label(p + Vector3(0, 1.75 + (0.35 if k == "cattedrale" else 0.0), -0.35), "%s ×%d" % [D.obj_name(k), D.OBJECTIVES[k]["mult"]], 30, UI.ACID_L if not dev else UI.BLOOD_L, Color.BLACK)
+	var ly := 1.75 + (0.35 if k == "cattedrale" else 0.0)
+	if mdl != null:
+		ly = _aabb(mdl.get_child(0)).size.y * mdl.get_child(0).scale.y + 0.45
+	_label(p + Vector3(0, ly, 0 if mdl != null else -0.35), "%s ×%d" % [D.obj_name(k), D.OBJECTIVES[k]["mult"]], 30, UI.ACID_L if not dev else UI.BLOOD_L, Color.BLACK)
 	if dev:
 		var fire := OmniLight3D.new()
 		fire.position = p + Vector3(0, 1.0, 0)
 		fire.light_color = Color("#ff4422")
-		fire.light_energy = 1.4
+		fire.light_energy = 0.45 if mdl != null else 1.4
 		fire.omni_range = 2.8
 		dyn.add_child(fire)
 	# chi c'è
