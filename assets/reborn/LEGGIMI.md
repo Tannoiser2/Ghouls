@@ -80,6 +80,6 @@ Per ognuno il fronte e il retro devastato (`_dev`). Nome, moltiplicatore e volon
 
 ## models/ — miniature 3D (facoltative, .glb)
 
-- `ghoul.glb`, `volontario.glb`: miniature per le pile di pedine nella vista 3D (al posto degli standee).
+- `ghoul.glb`, `volontario.glb`: miniature per le pile di pedine nella vista 3D (al posto degli standee). Facoltativi `ghoul_1.glb` … `ghoul_5.glb` per avere un ghoul diverso per ogni forza.
 - `cattedrale.glb`, `ospedale.glb`, … (stessi nomi degli Obiettivi): edifici della città nella vista 3D.
 Vanno bene i modelli fatti con Meshy; vengono scalati in automatico.

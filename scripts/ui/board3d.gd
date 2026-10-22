@@ -167,7 +167,7 @@ func _tex_mat(t: Texture2D, alpha := 1.0, unshaded := false) -> StandardMaterial
 
 
 func _load_models() -> void:
-	for n in ["ghoul", "volontario"] + D.OBJ_ORDER:
+	for n in ["ghoul", "ghoul_1", "ghoul_2", "ghoul_3", "ghoul_4", "ghoul_5", "volontario"] + D.OBJ_ORDER:
 		var p := "res://assets/reborn/models/%s.glb" % n
 		if UI.reborn and ResourceLoader.exists(p):
 			models[n] = load(p)
@@ -450,7 +450,10 @@ func _standee(id: int, at: Vector3, face: bool, h := 0.8) -> void:
 	var bc := UI.GHOUL_C if ghoul else UI.seat_col(eng, maxi(1, int(c["o"])))
 	base.material_override = _mat("base_" + bc.to_html(), bc, 0.5, 0.2)
 	dyn.add_child(base)
-	var mdl := _model("ghoul" if ghoul else "volontario", h) if (ghoul and face) or (not ghoul and c["t"] == "V") else null
+	var mname := "volontario"
+	if ghoul:
+		mname = "ghoul_%d" % int(c["v"]) if c["t"] == "G" and models.has("ghoul_%d" % int(c["v"])) else "ghoul"
+	var mdl := _model(mname, h) if (ghoul and face) or (not ghoul and c["t"] == "V") else null
 	if mdl != null:
 		mdl.position = at + Vector3(0, 0.06, 0)
 		dyn.add_child(mdl)
